@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mobile Tech Satkhira | Admin Panel</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0F1115;
+      color: #F3F4F6;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+    }
+    .hidden { display: none !important; }
+    .container { max-width: 980px; margin: 0 auto; padding: 16px; }
+    .card {
+      background: #171A21;
+      border: 1px solid #262B36;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .btn-orange {
+      background: linear-gradient(135deg, #F26522, #FF7A00);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 15px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-dark {
+      background: #222733;
+      color: #E5E7EB;
+      border: 1px solid #32394A;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-red {
+      background: #451A1A;
+      color: #FCA5A5;
+      border: 1px solid #7F1D1D;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    input, select, textarea {
+      width: 100%;
+      background: #0F1115;
+      color: #F9FAFB;
+      border: 1px solid #2D3340;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 13px;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: #F26522; }
+    label { display: block; font-size: 12px; color: #9CA3AF; margin-bottom: 5px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    @media (min-width: 640px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+    .tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; border-bottom: 1px solid #262B36; margin-bottom: 16px; }
+    .thumb-list { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .thumb-item { position: relative; width: 64px; height: 64px; border-radius: 10px; overflow: hidden; border: 1px solid #374151; background: #fff; }
+    .thumb-item img { width: 100%; height: 100%; object-fit: cover; }
+    .thumb-x { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border-radius: 50%; border: none; background: #DC2626; color: #fff; font-size: 11px; cursor: pointer; }
+    .preview-banner { width: 100%; max-height: 140px; object-fit: cover; border-radius: 10px; border: 1px solid #374151; margin-top: 8px; }
+  </style>
+</head>
+<body>
+
+  <!-- PIN LOGIN -->
+  <div id="loginBox" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;">
+    <div class="card" style="width:100%;max-width:360px;text-align:center;padding:24px;">
+      <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#F26522,#FF7A00);color:#fff;font-weight:900;font-size:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">MT</div>
+      <h1 style="font-size:18px;font-weight:800;">Mobile Tech Admin</h1>
+      <p style="font-size:12px;color:#9CA3AF;margin-top:4px;">Songita More &amp; Rahim Plaza, Satkhira</p>
+      <div style="margin-top:18px;">
+        <label>Enter PIN (Default: 1234)</label>
+        <input id="pinInput" type="text" inputmode="numeric" maxlength="8" placeholder="1234" style="text-align:center;font-size:20px;letter-spacing:5px;font-weight:700;" />
+        <p id="pinErr" class="hidden" style="color:#F87171;font-size:12px;margin-top:6px;">Wrong PIN! Try 1234.</p>
+        <button type="button" onclick="window.mtLogin()" class="btn-orange" style="width:100%;margin-top:14px;padding:11px;">Login</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashBox" class="hidden">
+    <header style="position:sticky;top:0;z-index:20;background:#0F1115;border-bottom:1px solid #262B36;padding:12px 16px;">
+      <div style="max-width:980px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;">
+        <div>
+          <strong style="font-size:15px;">Mobile Tech Admin</strong>
+          <div style="font-size:11px;color:#9CA3AF;">01939167388 • Songita More &amp; Rahim Plaza</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <a href="index.html" target="_blank" class="btn-dark" style="text-decoration:none;color:#60A5FA;">Open Store</a>
+          <button type="button" id="btnCopySync" class="btn-orange" style="padding:8px 12px;font-size:12px;">Copy Sync Link</button>
+          <button type="button" id="btnLock" class="btn-red">Lock</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <div class="tabs">
+        <button type="button" id="t-products" class="btn-orange" style="padding:8px 13px;font-size:12px;">+ Products &amp; Photos</button>
+        <button type="button" id="t-brand" class="btn-dark">Shop Logo &amp; Profile</button>
+        <button type="button" id="t-banners" class="btn-dark">Cover Banner &amp; Promo Cards</button>
+        <button type="button" id="t-csv" class="btn-dark">CSV Bulk Import</button>
+      </div>
+
+      <!-- TAB 1: PRODUCTS -->
+      <section id="s-products">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <h2 id="pFormTitle" style="font-size:15px;font-weight:700;color:#FBBF24;">Add / Edit Product</h2>
+            <button type="button" id="btnCancelEdit" class="hidden btn-dark">Cancel</button>
+          </div>
+          <input type="hidden" id="pEditId" />
+          <div class="grid-2">
+            <div>
+              <label>Product Name *</label>
+              <input id="pName" type="text" placeholder="iPhone 18 Pro Max 256GB" />
+            </div>
+            <div>
+              <label>Category</label>
+              <select id="pCat">
+                <option value="Apple">Apple</option>
+                <option value="Android">Android</option>
+                <option value="Accessories">Accessories</option>
+                <option value="Used">Used</option>
+              </select>
+            </div>
+            <div>
+              <label>Offer Price (৳) *</label>
+              <input id="pPrice" type="number" placeholder="168000" />
+            </div>
+            <div>
+              <label>Regular Price (৳) (for SAVE badge)</label>
+              <input id="pOldPrice" type="number" placeholder="175000" />
+            </div>
+            <div>
+              <label>Songita More Stock</label>
+              <select id="pSongita">
+                <option value="In Stock">In Stock</option>
+                <option value="Limited">Limited</option>
+                <option value="Out of Stock">Out of Stock</option>
+              </select>
+            </div>
+            <div>
+              <label>Rahim Plaza Stock</label>
+              <select id="pRahim">
+                <option value="In Stock">In Stock</option>
+                <option value="Limited">Limited</option>
+                <option value="Out of Stock">Out of Stock</option>
+              </select>
+            </div>
+            <div style="grid-column:1/-1;">
+              <label>Short Specs / Description</label>
+              <input id="pSpecs" type="text" placeholder="All Region • All Color • Official Warranty" />
+            </div>
+            <div>
+              <label>Upload Product Photos from Gallery (Max 5)</label>
+              <input id="pFiles" type="file" accept="image/*" multiple style="padding:6px;font-size:12px;" />
+            </div>
+            <div>
+              <label>Or Add Image URL</label>
+              <div style="display:flex;gap:6px;">
+                <input id="pUrl" type="text" placeholder="https://..." />
+                <button type="button" id="btnAddUrl" class="btn-dark" style="color:#FBBF24;">+ Add</button>
+              </div>
+            </div>
+          </div>
+          <div id="pThumbs" class="thumb-list"></div>
+          <button type="button" id="btnSaveProd" class="btn-orange" style="width:100%;margin-top:14px;">Save Product</button>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap;">
+            <h3 style="font-size:14px;font-weight:700;">Your Products (<span id="pCount">0</span>)</h3>
+            <button type="button" id="btnClearDemo" class="btn-red">Remove All Demo Products</button>
+          </div>
+          <div style="display:flex;gap:7px;margin:10px 0 6px;align-items:center;">
+            <input id="pSearch" type="search" placeholder="পণ্যের নাম / ক্যাটাগরি / দাম লিখুন..." style="margin:0;flex:1;min-width:0;" />
+            <button type="button" id="btnSearchProducts" class="btn-orange" style="white-space:nowrap;">Search</button>
+            <button type="button" id="btnClearSearch" class="btn-dark" style="white-space:nowrap;">Clear</button>
+          </div>
+          <div id="pSearchCount" style="font-size:11px;color:#9CA3AF;margin:0 0 10px;"></div>
+          <div id="pList"></div>
+        </div>
+      </section>
+
+      <!-- TAB 2: SHOP LOGO & PROFILE -->
+      <section id="s-brand" class="hidden">
+        <div class="card">
+          <h2 style="font-size:15px;font-weight:700;color:#FBBF24;margin-bottom:10px;">Shop Logo &amp; Profile Settings</h2>
+          <div class="grid-2">
+            <div>
+              <label>Shop Name</label>
+              <input id="bShopName" type="text" placeholder="MOBILE TECH" />
+            </div>
+            <div>
+              <label>WhatsApp / Hotline Number</label>
+              <input id="bWhatsapp" type="text" placeholder="01939167388" />
+            </div>
+            <div style="grid-column:1/-1;">
+              <label>Top Bar Announcement Text</label>
+              <input id="bNotice" type="text" placeholder="100% Authentic Devices • 2 Showrooms in Satkhira (Songita More & Rahim Plaza)" />
+            </div>
+            <div>
+              <label>Upload Shop Logo / Profile Picture (Gallery)</label>
+              <input id="bLogoFile" type="file" accept="image/*" style="padding:6px;font-size:12px;" />
+            </div>
+            <div>
+              <label>Or Logo Image URL</label>
+              <input id="bLogoUrl" type="text" placeholder="https://..." />
+            </div>
+          </div>
+          <div id="bLogoPreviewWrap" class="hidden" style="margin-top:10px;display:flex;align-items:center;gap:10px;">
+            <img id="bLogoPreview" src="" style="width:56px;height:56px;border-radius:12px;object-fit:cover;border:1px solid #374151;background:#fff;" />
+            <button type="button" id="btnRemoveLogo" class="btn-red">Remove Logo</button>
+          </div>
+          <button type="button" id="btnSaveBrand" class="btn-orange" style="margin-top:14px;">Save Shop Profile &amp; Logo</button>
+        </div>
+      </section>
+
+      <!-- TAB 3: COVER BANNER & 2 PROMO CARDS -->
+      <section id="s-banners" class="hidden">
+        <div class="card">
+          <h2 style="font-size:15px;font-weight:700;color:#FBBF24;margin-bottom:10px;">Main Cover Banner (Hero Slide 1)</h2>
+          <div class="grid-2">
+            <div><label>Badge</label><input id="s1Badge" type="text" /></div>
+            <div><label>Title</label><input id="s1Title" type="text" /></div>
+            <div><label>Subtitle</label><input id="s1Sub" type="text" /></div>
+            <div><label>Button Text</label><input id="s1Cta" type="text" /></div>
+            <div><label>Upload Cover Photo from Gallery</label><input id="s1File" type="file" accept="image/*" style="padding:6px;font-size:12px;" /></div>
+            <div><label>Or Cover Image URL</label><input id="s1Url" type="text" placeholder="https://..." /></div>
+          </div>
+          <img id="s1PreviewImg" src="" class="preview-banner hidden" />
+          <button type="button" id="btnDelS1Img" class="btn-red hidden" style="margin-top:8px;">Remove Cover Photo</button>
+        </div>
+
+        <div class="card">
+          <h2 style="font-size:15px;font-weight:700;color:#FBBF24;margin-bottom:10px;">2 Promo Feature Cards (Left &amp; Right Cards)</h2>
+          <div class="grid-2">
+            <div>
+              <label>Left Card Top Tag</label><input id="pm1Kicker" type="text" />
+              <label style="margin-top:8px;">Left Card Title</label><input id="pm1Title" type="text" />
+              <label style="margin-top:8px;">Left Card Subtitle</label><input id="pm1Sub" type="text" />
+              <label style="margin-top:8px;">Left Card Background Photo (Gallery)</label><input id="pm1File" type="file" accept="image/*" style="padding:6px;font-size:12px;" />
+              <img id="pm1PreviewImg" src="" class="preview-banner hidden" />
+            </div>
+            <div>
+              <label>Right Card Top Tag</label><input id="pm2Kicker" type="text" />
+              <label style="margin-top:8px;">Right Card Title</label><input id="pm2Title" type="text" />
+              <label style="margin-top:8px;">Right Card Subtitle</label><input id="pm2Sub" type="text" />
+              <label style="margin-top:8px;">Right Card Background Photo (Gallery)</label><input id="pm2File" type="file" accept="image/*" style="padding:6px;font-size:12px;" />
+              <img id="pm2PreviewImg" src="" class="preview-banner hidden" />
+            </div>
+          </div>
+          <button type="button" id="btnSavePromo" class="btn-orange" style="margin-top:14px;">Save Cover Banner &amp; Promo Cards</button>
+        </div>
+      </section>
+
+      <!-- TAB 4: CSV IMPORT -->
+      <section id="s-csv" class="hidden">
+        <div class="card">
+          <h2 style="font-size:15px;font-weight:700;color:#FBBF24;margin-bottom:8px;">CSV Bulk Product Upload &amp; Export</h2>
+          <p style="font-size:12px;color:#9CA3AF;margin-bottom:12px;">Download sample CSV, edit in Excel/Sheets, and upload here.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+            <button type="button" id="btnSampleCsv" class="btn-dark" style="color:#FBBF24;">Download Sample CSV</button>
+            <button type="button" id="btnExportCsv" class="btn-dark" style="color:#34D399;">Export Current Products CSV</button>
+          </div>
+          <input id="csvInput" type="file" accept=".csv,text/csv" style="padding:7px;font-size:12px;margin-bottom:12px;" />
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="button" id="btnCsvAppend" class="btn-orange">Append to Products</button>
+            <button type="button" id="btnCsvReplace" class="btn-red">Replace All Products</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (function() {
+      var CATALOG_KEY = 'mobiletech_catalog_v2';
+      var PROMO_KEY = 'mobiletech_promo_v1';
+      var BRAND_KEY = 'mobiletech_brand_v1';
+      var memCatalog = [];
+      var prodImages = [];
+      var logoImgData = '';
+      var bannerImgData = '';
+      var promo1ImgData = '';
+      var promo2ImgData = '';
+      var pendingImageJobs = 0;
+      var imageSaveButtonText = 'Save Product';
+
+      function normDigits(s) {
+        var map = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
+        return String(s || '').replace(/[০-৯]/g, function(d){ return map[d] || d; }).trim();
+      }
+      function safeGet(k, fb) { try { var v = localStorage.getItem(k); return v !== null ? v : fb; } catch (e) { return fb; } }
+      function safeSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+
+      function doLogin(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        var pin = normDigits(document.getElementById('pinInput').value);
+        if (pin === '1234') {
+          try { sessionStorage.setItem('mt_v7_open', '1'); } catch (ex) {}
+          document.getElementById('pinErr').classList.add('hidden');
+          document.getElementById('loginBox').classList.add('hidden');
+          document.getElementById('dashBox').classList.remove('hidden');
+          loadBrandForm();
+          loadPromoForm();
+          renderProdList();
+        } else {
+          document.getElementById('pinErr').classList.remove('hidden');
+        }
+      }
+      window.mtLogin = doLogin;
+
+      function getProducts() {
+        try {
+          var raw = safeGet(CATALOG_KEY, '');
+          if (raw) { memCatalog = JSON.parse(raw); return memCatalog; }
+        } catch (e) {}
+        return memCatalog;
+      }
+      function setProducts(list) {
+        var previous = memCatalog;
+        if (!safeSet(CATALOG_KEY, JSON.stringify(list))) {
+          memCatalog = previous;
+          renderProdList();
+          alert('Storage is full. Please use fewer/smaller photos (1-2 photos per product) and try again.');
+          return false;
+        }
+        memCatalog = list;
+        renderProdList();
+        return true;
+      }
+
+      function updateImageBusy(delta) {
+        pendingImageJobs = Math.max(0, pendingImageJobs + delta);
+        var btn = document.getElementById('btnSaveProd');
+        btn.disabled = pendingImageJobs > 0;
+        btn.style.opacity = pendingImageJobs > 0 ? '0.55' : '1';
+        btn.textContent = pendingImageJobs > 0 ? 'Preparing photo... Please wait' : imageSaveButtonText;
+      }
+
+      function compressImg(file, maxW, cb) {
+        var r = new FileReader();
+        r.onerror = function(){ cb(null); };
+        r.onload = function(ev) {
+          var im = new Image();
+          im.onerror = function(){ cb(null); };
+          im.onload = function() {
+            try {
+              var c = document.createElement('canvas');
+              var sc = Math.min(1, maxW / im.width, 900 / im.height);
+              c.width = Math.max(1, Math.round(im.width * sc));
+              c.height = Math.max(1, Math.round(im.height * sc));
+              c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+              cb(c.toDataURL('image/jpeg', 0.68));
+            } catch(err) { cb(null); }
+          };
+          im.src = ev.target.result;
+        };
+        r.readAsDataURL(file);
+      }
+
+      function renderThumbs() {
+        document.getElementById('pThumbs').innerHTML = prodImages.map(function(u, i) {
+          return '<div class="thumb-item"><img src="' + u + '"/><button type="button" class="thumb-x" onclick="delThumb(' + i + ')">×</button></div>';
+        }).join('');
+      }
+      window.delThumb = function(i) { prodImages.splice(i, 1); renderThumbs(); };
+
+      function resetProdForm() {
+        document.getElementById('pEditId').value = '';
+        document.getElementById('pName').value = '';
+        document.getElementById('pPrice').value = '';
+        document.getElementById('pOldPrice').value = '';
+        document.getElementById('pSpecs').value = '';
+        document.getElementById('pFiles').value = '';
+        document.getElementById('pUrl').value = '';
+        prodImages = [];
+        document.getElementById('pFiles').value = '';
+        renderThumbs();
+        document.getElementById('pFormTitle').textContent = 'Add / Edit Product';
+        document.getElementById('btnCancelEdit').classList.add('hidden');
+      }
+
+      document.getElementById('btnSaveProd').addEventListener('click', function() {
+        if (pendingImageJobs > 0) return alert('Please wait until photo processing finishes.');
+        var name = document.getElementById('pName').value.trim();
+        var price = Number(document.getElementById('pPrice').value);
+        if (!name || !price) return alert('Enter product name and price.');
+        var urlVal = document.getElementById('pUrl').value.trim();
+        if (urlVal && prodImages.indexOf(urlVal) === -1) prodImages.push(urlVal);
+        var imgs = prodImages.length ? prodImages.slice(0, 5) : ['https://placehold.co/320x320/F9FAFB/111827?text=Mobile+Tech'];
+        var editId = document.getElementById('pEditId').value;
+        var item = {
+          id: editId || ('p_' + Date.now()),
+          name: name,
+          category: document.getElementById('pCat').value,
+          brand: document.getElementById('pCat').value,
+          price: price,
+          oldPrice: Number(document.getElementById('pOldPrice').value) || 0,
+          songitaStock: document.getElementById('pSongita').value,
+          rahimStock: document.getElementById('pRahim').value,
+          specs: document.getElementById('pSpecs').value.trim(),
+          image: imgs[0],
+          images: imgs
+        };
+        var list = getProducts();
+        if (editId) {
+          var idx = list.findIndex(function(x){ return x.id === editId; });
+          if (idx > -1) list[idx] = item;
+        } else {
+          list.unshift(item);
+        }
+        if (!setProducts(list)) return;
+        resetProdForm();
+        alert('Product saved successfully!');
+      });
+
+      window.editProd = function(id) {
+        var p = getProducts().find(function(x){ return x.id === id; });
+        if (!p) return;
+        document.getElementById('pEditId').value = p.id;
+        document.getElementById('pName').value = p.name;
+        document.getElementById('pCat').value = p.category || 'Apple';
+        document.getElementById('pPrice').value = p.price;
+        document.getElementById('pOldPrice').value = p.oldPrice || '';
+        document.getElementById('pSongita').value = p.songitaStock || 'In Stock';
+        document.getElementById('pRahim').value = p.rahimStock || 'In Stock';
+        document.getElementById('pSpecs').value = p.specs || '';
+        prodImages = Array.isArray(p.images) && p.images.length ? p.images.slice() : [p.image];
+        renderThumbs();
+        document.getElementById('pFormTitle').textContent = 'Edit Product';
+        document.getElementById('btnCancelEdit').classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      window.delProd = function(id) {
+        if (!confirm('Delete this product?')) return;
+        setProducts(getProducts().filter(function(x){ return x.id !== id; }));
+      };
+
+      document.getElementById('btnClearDemo').addEventListener('click', function() {
+        if (!confirm('Remove all products from list so you can add only yours?')) return;
+        setProducts([]);
+      });
+
+      function renderProdList() {
+        var all = getProducts();
+        document.getElementById('pCount').textContent = all.length;
+        var searchBox = document.getElementById('pSearch');
+        var term = normDigits(searchBox ? searchBox.value : '').trim().toLocaleLowerCase();
+        var list = all.filter(function(p) {
+          var hay = normDigits([p.name, p.category, p.specs, p.price, p.oldPrice, p.songitaStock, p.rahimStock].join(' ')).toLocaleLowerCase();
+          return !term || hay.indexOf(term) !== -1;
+        });
+        var count = document.getElementById('pSearchCount');
+        if (count) count.textContent = term ? ('পাওয়া গেছে ' + list.length + 'টি / মোট ' + all.length + 'টি পণ্য') : ('মোট ' + all.length + 'টি পণ্য');
+        document.getElementById('pList').innerHTML = list.map(function(p, i) {
+          var pid = String(p.id).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+          var photoCount = (Array.isArray(p.images) ? p.images.length : (p.image ? 1 : 0));
+          return '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px;border:1px solid #262B36;border-radius:10px;background:#0F1115;margin-bottom:8px;flex-wrap:wrap;">' +
+            '<div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">' +
+              '<img src="' + (p.image || 'https://placehold.co/80x80?text=Photo') + '" style="width:48px;height:48px;border-radius:8px;object-fit:cover;background:#fff;" />' +
+              '<div style="min-width:0;">' +
+                '<div style="font-size:13px;font-weight:700;overflow-wrap:anywhere;">' + p.name + '</div>' +
+                '<div style="font-size:12px;color:#FBBF24;font-weight:700;">৳' + Number(p.price).toLocaleString() + ' • ' + (p.category || 'Apple') + '</div>' +
+                '<div style="font-size:10px;color:#9CA3AF;">ছবি: ' + photoCount + '/5</div>' +
+              '</div>' +
+            '</div>' +
+            '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+              '<label class="btn-orange" style="cursor:pointer;display:inline-block;">📷 ছবি যোগ করুন<input type="file" accept="image/*" multiple style="display:none;" onchange="quickPhotoChange(\'' + pid + '\',this)"></label>' +
+              '<button type="button" onclick="editProd(\'' + pid + '\')" class="btn-dark" style="color:#FBBF24;">Edit</button>' +
+              '<button type="button" onclick="delProd(\'' + pid + '\')" class="btn-red">Del</button>' +
+            '</div>' +
+          '</div>';
+        }).join('') || '<p style="font-size:12px;color:#9CA3AF;padding:10px;">' + (term ? 'কোনো পণ্য পাওয়া যায়নি। বানান বা দাম আবার দেখুন।' : 'No products yet. Add your products above!') + '</p>';
+      }
+      document.getElementById('pSearch').addEventListener('input', renderProdList);
+      document.getElementById('btnSearchProducts').addEventListener('click', renderProdList);
+      document.getElementById('btnClearSearch').addEventListener('click', function(){
+        document.getElementById('pSearch').value = '';
+        renderProdList();
+        document.getElementById('pSearch').focus();
+      });
+      document.getElementById('pSearch').addEventListener('keydown', function(e){ if (e.key === 'Enter') renderProdList(); });
+
+      window.quickPhotoChange = function(id, input) {
+        var files = Array.prototype.slice.call(input.files || []);
+        if (!files.length) return;
+        var products = getProducts();
+        var product = products.find(function(x){ return String(x.id) === String(id); });
+        if (!product) { alert('পণ্যটি পাওয়া যায়নি।'); input.value = ''; return; }
+        var existing = Array.isArray(product.images) && product.images.length ? product.images.slice() : (product.image ? [product.image] : []);
+        existing = existing.filter(function(u){ return u && u.indexOf('placehold.co') === -1; });
+        var remaining = Math.max(0, 5 - existing.length);
+        if (!remaining) { alert('এই পণ্যে ইতিমধ্যে ৫টি ছবি আছে। আগে Edit করে কোনো ছবি মুছুন।'); input.value = ''; return; }
+        files = files.slice(0, remaining);
+        var done = 0, failed = 0;
+        function finishOne() {
+          done++;
+          if (done === files.length) {
+            if (existing.length) { product.images = existing; product.image = existing[0]; }
+            if (!setProducts(products)) { alert('স্টোরেজ পূর্ণ! ছোট সাইজের ছবি দিন।'); }
+            else alert((files.length - failed) + 'টি ছবি ' + product.name + ' পণ্যে যোগ হয়েছে।');
+            input.value = '';
+          }
+        }
+        files.forEach(function(file){
+          compressImg(file, 520, function(data){
+            if (data) existing.push(data); else failed++;
+            finishOne();
+          });
+        });
+      };
+
+      // SHOP LOGO & PROFILE
+      function loadBrandForm() {
+        var b = {};
+        try { b = JSON.parse(safeGet(BRAND_KEY, '{}')); } catch (e) {}
+        document.getElementById('bShopName').value = b.shopName || 'MOBILE TECH';
+        document.getElementById('bWhatsapp').value = b.whatsapp || '01939167388';
+        document.getElementById('bNotice').value = b.notice || '100% Authentic Devices • 2 Showrooms in Satkhira (Songita More & Rahim Plaza)';
+        logoImgData = b.logo || '';
+        updateLogoPreview();
+      }
+      function updateLogoPreview() {
+        var wrap = document.getElementById('bLogoPreviewWrap');
+        if (logoImgData) {
+          document.getElementById('bLogoPreview').src = logoImgData;
+          wrap.classList.remove('hidden');
+        } else {
+          wrap.classList.add('hidden');
+        }
+      }
+      document.getElementById('bLogoFile').addEventListener('change', function(e) {
+        if (e.target.files[0]) compressImg(e.target.files[0], 220, function(u){ if (!u) return alert('Could not read this photo. Please choose another image.'); logoImgData = u; updateLogoPreview(); });
+      });
+      document.getElementById('bLogoUrl').addEventListener('input', function() {
+        logoImgData = this.value.trim();
+        updateLogoPreview();
+      });
+      document.getElementById('btnRemoveLogo').addEventListener('click', function() {
+        logoImgData = '';
+        document.getElementById('bLogoFile').value = '';
+        document.getElementById('bLogoUrl').value = '';
+        updateLogoPreview();
+      });
+      document.getElementById('btnSaveBrand').addEventListener('click', function() {
+        var obj = {
+          shopName: document.getElementById('bShopName').value.trim() || 'MOBILE TECH',
+          whatsapp: document.getElementById('bWhatsapp').value.trim() || '01939167388',
+          notice: document.getElementById('bNotice').value.trim(),
+          logo: logoImgData
+        };
+        if (!safeSet(BRAND_KEY, JSON.stringify(obj))) return alert('Browser storage is full. Remove some large photos and try again.');
+        alert('Shop Logo & Profile saved!');
+      });
+
+      // COVER BANNER & 2 PROMO CARDS
+      function loadPromoForm() {
+        var d = {};
+        try { d = JSON.parse(safeGet(PROMO_KEY, '{}')); } catch (e) {}
+        var s1 = (d.slides && d.slides[0]) || {};
+        var p1 = d.promo1 || {};
+        var p2 = d.promo2 || {};
+        document.getElementById('s1Badge').value = s1.badge || 'READY STOCK';
+        document.getElementById('s1Title').value = s1.title || 'iPhone 18 Pro | Pro Max';
+        document.getElementById('s1Sub').value = s1.subtitle || 'Most Wanted • All Region | All Color • Ready Stock';
+        document.getElementById('s1Cta').value = s1.cta || 'View Ready Stock →';
+        bannerImgData = s1.image || '';
+        updateBannerPreviews();
+
+        document.getElementById('pm1Kicker').value = p1.kicker || 'GALAXY AI';
+        document.getElementById('pm1Title').value = (p1.title || 'Galaxy S26 Ultra').replace(/\n/g, ' ');
+        document.getElementById('pm1Sub').value = (p1.sub || 'Official & Int. Ready Stock →').replace(/\n/g, ' ');
+        promo1ImgData = p1.image || '';
+
+        document.getElementById('pm2Kicker').value = p2.kicker || 'LEICA OPTICS';
+        document.getElementById('pm2Title').value = p2.title || 'Xiaomi 18 Pro';
+        document.getElementById('pm2Sub').value = (p2.sub || 'Co-Engineered With Leica →').replace(/\n/g, ' ');
+        promo2ImgData = p2.image || '';
+        updateBannerPreviews();
+      }
+      function updateBannerPreviews() {
+        var s1Img = document.getElementById('s1PreviewImg');
+        var s1Del = document.getElementById('btnDelS1Img');
+        if (bannerImgData) { s1Img.src = bannerImgData; s1Img.classList.remove('hidden'); s1Del.classList.remove('hidden'); }
+        else { s1Img.classList.add('hidden'); s1Del.classList.add('hidden'); }
+
+        var p1Img = document.getElementById('pm1PreviewImg');
+        if (promo1ImgData) { p1Img.src = promo1ImgData; p1Img.classList.remove('hidden'); } else { p1Img.classList.add('hidden'); }
+
+        var p2Img = document.getElementById('pm2PreviewImg');
+        if (promo2ImgData) { p2Img.src = promo2ImgData; p2Img.classList.remove('hidden'); } else { p2Img.classList.add('hidden'); }
+      }
+      document.getElementById('s1File').addEventListener('change', function(e) {
+        if (e.target.files[0]) compressImg(e.target.files[0], 900, function(u){ if (!u) return alert('Could not read this cover photo.'); bannerImgData = u; updateBannerPreviews(); });
+      });
+      document.getElementById('s1Url').addEventListener('input', function() {
+        bannerImgData = this.value.trim();
+        updateBannerPreviews();
+      });
+      document.getElementById('btnDelS1Img').addEventListener('click', function() {
+        bannerImgData = '';
+        document.getElementById('s1File').value = '';
+        document.getElementById('s1Url').value = '';
+        updateBannerPreviews();
+      });
+      document.getElementById('pm1File').addEventListener('change', function(e) {
+        if (e.target.files[0]) compressImg(e.target.files[0], 500, function(u){ if (!u) return alert('Could not read this photo.'); promo1ImgData = u; updateBannerPreviews(); });
+      });
+      document.getElementById('pm2File').addEventListener('change', function(e) {
+        if (e.target.files[0]) compressImg(e.target.files[0], 500, function(u){ if (!u) return alert('Could not read this photo.'); promo2ImgData = u; updateBannerPreviews(); });
+      });
+
+      document.getElementById('btnSavePromo').addEventListener('click', function() {
+        var existing = {};
+        try { existing = JSON.parse(safeGet(PROMO_KEY, '{}')); } catch (e) {}
+        var slides = Array.isArray(existing.slides) && existing.slides.length ? existing.slides.slice() : [{}, {}, {}, {}];
+        slides[0] = {
+          badge: document.getElementById('s1Badge').value.trim(),
+          title: document.getElementById('s1Title').value.trim(),
+          subtitle: document.getElementById('s1Sub').value.trim(),
+          cta: document.getElementById('s1Cta').value.trim(),
+          category: 'Apple',
+          image: bannerImgData
+        };
+        var obj = {
+          slides: slides,
+          promo1: {
+            kicker: document.getElementById('pm1Kicker').value.trim(),
+            title: document.getElementById('pm1Title').value.trim(),
+            sub: document.getElementById('pm1Sub').value.trim(),
+            category: 'Android',
+            image: promo1ImgData
+          },
+          promo2: {
+            kicker: document.getElementById('pm2Kicker').value.trim(),
+            title: document.getElementById('pm2Title').value.trim(),
+            sub: document.getElementById('pm2Sub').value.trim(),
+            category: 'Android',
+            image: promo2ImgData
+          }
+        };
+        if (!safeSet(PROMO_KEY, JSON.stringify(obj))) return alert('Browser storage is full. Please use smaller banner photos and try again.');
+        alert('Cover Banner & Promo Cards saved!');
+      });
+
+      // CSV IMPORT / EXPORT
+      function parseCsvLine(line) {
+        var out = [], cur = '', q = false;
+        for (var i = 0; i < line.length; i++) {
+          var c = line[i];
+          if (c === '"') { if (q && line[i+1] === '"') { cur += '"'; i++; } else q = !q; }
+          else if (c === ',' && !q) { out.push(cur.trim()); cur = ''; }
+          else cur += c;
+        }
+        out.push(cur.trim());
+        return out;
+      }
+      function importCsv(replaceMode) {
+        var inp = document.getElementById('csvInput');
+        if (!inp.files || !inp.files[0]) return alert('Select a .csv file.');
+        var r = new FileReader();
+        r.onload = function(ev) {
+          var lines = (ev.target.result || '').split(/\r?\n/).filter(function(l){ return l.trim(); });
+          if (lines.length < 2) return alert('CSV needs header + rows.');
+          var headers = parseCsvLine(lines[0]).map(function(h){ return h.toLowerCase(); });
+          var added = [];
+          for (var i = 1; i < lines.length; i++) {
+            var cols = parseCsvLine(lines[i]);
+            var row = {};
+            headers.forEach(function(h, idx){ row[h] = cols[idx] || ''; });
+            var name = row.name || cols[0] || '';
+            var price = Number(String(row.price || cols[2] || '0').replace(/[^0-9.]/g, ''));
+            if (!name || !price) continue;
+            var imgs = (row.images || row.image || cols[6] || '').split('|').map(function(u){ return u.trim(); }).filter(Boolean);
+            if (!imgs.length) imgs = ['https://placehold.co/320x320/F9FAFB/111827?text=Mobile+Tech'];
+            added.push({
+              id: 'csv_' + Date.now() + '_' + i,
+              name: name,
+              category: row.category || cols[1] || 'Apple',
+              brand: row.category || cols[1] || 'Apple',
+              price: price,
+              oldPrice: Number(String(row.oldprice || cols[3] || '0').replace(/[^0-9.]/g, '')) || 0,
+              songitaStock: row.songitastock || cols[4] || 'In Stock',
+              rahimStock: row.rahimstock || cols[5] || 'In Stock',
+              image: imgs[0],
+              images: imgs
+            });
+          }
+          setProducts(replaceMode ? added : added.concat(getProducts()));
+          inp.value = '';
+          alert(added.length + ' products imported!');
+        };
+        r.readAsText(inp.files[0]);
+      }
+      document.getElementById('btnSampleCsv').addEventListener('click', function() {
+        var csv = 'name,category,price,oldPrice,songitaStock,rahimStock,images\n"iPhone 18 Pro Max 256GB","Apple",168000,175000,"In Stock","In Stock","https://placehold.co/320x320/F9FAFB/111827?text=iPhone+18+Pro+Max"\n"Galaxy S26 Ultra 12/256GB","Android",129000,135000,"In Stock","In Stock","https://placehold.co/320x320/F9FAFB/111827?text=Galaxy+S26+Ultra"';
+        var b = new Blob([csv], {type: 'text/csv'});
+        var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'mobile-tech-sample.csv'; a.click();
+      });
+      document.getElementById('btnCsvAppend').addEventListener('click', function(){ importCsv(false); });
+      document.getElementById('btnCsvReplace').addEventListener('click', function(){ importCsv(true); });
+      document.getElementById('btnExportCsv').addEventListener('click', function() {
+        var list = getProducts();
+        var csv = 'name,category,price,oldPrice,songitaStock,rahimStock\n' + list.map(function(p){
+          return [p.name, p.category, p.price, p.oldPrice || 0, p.songitaStock || 'In Stock', p.rahimStock || 'In Stock'].map(function(v){ return '"' + String(v).replace(/"/g,'""') + '"'; }).join(',');
+        }).join('\n');
+        var b = new Blob([csv], {type: 'text/csv'});
+        var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'mobile-tech-export.csv'; a.click();
+      });
+
+      document.getElementById('pFiles').addEventListener('change', function(e) {
+        var files = Array.prototype.slice.call(e.target.files || []);
+        files.forEach(function(f) {
+          if (prodImages.length + pendingImageJobs >= 5) return;
+          updateImageBusy(1);
+          compressImg(f, 520, function(u){
+            if (u && prodImages.length < 5) { prodImages.push(u); renderThumbs(); }
+            else if (!u) alert('A photo could not be processed. Please try another photo.');
+            updateImageBusy(-1);
+          });
+        });
+      });
+      document.getElementById('btnAddUrl').addEventListener('click', function() {
+        var u = document.getElementById('pUrl').value.trim();
+        if (u && prodImages.length < 5) { prodImages.push(u); document.getElementById('pUrl').value = ''; renderThumbs(); }
+      });
+      document.getElementById('btnCancelEdit').addEventListener('click', resetProdForm);
+
+      function switchT(t) {
+        ['products','brand','banners','csv'].forEach(function(x){
+          document.getElementById('s-' + x).classList.toggle('hidden', x !== t);
+          document.getElementById('t-' + x).className = x === t ? 'btn-orange' : 'btn-dark';
+          if (x === t) { document.getElementById('t-' + x).style.padding = '8px 13px'; document.getElementById('t-' + x).style.fontSize = '12px'; }
+        });
+      }
+      document.getElementById('t-products').addEventListener('click', function(){ switchT('products'); });
+      document.getElementById('t-brand').addEventListener('click', function(){ switchT('brand'); });
+      document.getElementById('t-banners').addEventListener('click', function(){ switchT('banners'); });
+      document.getElementById('t-csv').addEventListener('click', function(){ switchT('csv'); });
+
+      document.getElementById('btnCopySync').addEventListener('click', function() {
+        var base = location.href.replace(/admin[^\/]*\.html.*$/i, 'index.html');
+        var obj = {
+          products: getProducts(),
+          promo: JSON.parse(safeGet(PROMO_KEY, '{}')),
+          brand: JSON.parse(safeGet(BRAND_KEY, '{}'))
+        };
+        var url = base + '?syncdata=' + btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url);
+        alert('Synced Customer Link copied!');
+      });
+
+      document.getElementById('btnLock').addEventListener('click', function() {
+        try { sessionStorage.removeItem('mt_v7_open'); } catch (e) {}
+        document.getElementById('dashBox').classList.add('hidden');
+        document.getElementById('loginBox').classList.remove('hidden');
+      });
+
+      document.getElementById('pinInput').addEventListener('keyup', function(e){ if (e.key === 'Enter') doLogin(e); });
+      try { if (sessionStorage.getItem('mt_v7_open') === '1') { document.getElementById('pinInput').value = '1234'; doLogin(); } } catch (e) {}
+    })();
+  </script>
+</body>
+</html>
